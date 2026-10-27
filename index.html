@@ -199,8 +199,16 @@ const esc = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;"
 // no se confunde si cambias el orden de las filas en la hoja.
 const sinTildes = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 const idDe = t => [...t.trim().toLowerCase()].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7);
-// Una foto puede ser un enlace completo o un nombre de archivo de la carpeta img/
-const ruta = f => /^https?:/.test(f) ? f : "img/" + f;
+// Dónde están las fotos: por defecto junto a index.html. Si algún día usas una carpeta,
+// agrega en config.js:  const CARPETA_FOTOS = "img/";
+const CARPETA = typeof CARPETA_FOTOS === "string" ? CARPETA_FOTOS : "";
+// Una foto puede ser: el nombre de un archivo, cualquier enlace de imagen, o un enlace de
+// Google Drive (Compartir > "Cualquier persona con el enlace"), que se convierte solo.
+const ruta = f => {
+  const drive = f.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
+  if (drive) return `https://lh3.googleusercontent.com/d/${drive[1]}=w1000`;
+  return /^https?:/.test(f) ? f : CARPETA + f;
+};
 const fotosDe = p => (p.fotos && p.fotos.length ? p.fotos : [""]).map(ruta);
 
 /* 5) PRODUCTOS Y CATEGORÍAS */
